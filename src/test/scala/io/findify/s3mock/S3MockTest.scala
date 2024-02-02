@@ -1,9 +1,9 @@
 package io.findify.s3mock
 
-import akka.actor.ActorSystem
-import akka.stream.alpakka.s3.S3Settings
-import akka.stream.alpakka.s3.scaladsl.S3
-import akka.stream.{ActorMaterializer, Materializer}
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.connectors.s3.S3Settings
+import org.apache.pekko.stream.connectors.s3.scaladsl.S3
+import org.apache.pekko.stream.{ActorMaterializer, Materializer}
 import better.files.File
 import com.amazonaws.auth.{AWSStaticCredentialsProvider, AnonymousAWSCredentials, BasicAWSCredentials, DefaultAWSCredentialsProviderChain}
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
@@ -14,7 +14,9 @@ import com.typesafe.config.{Config, ConfigFactory}
 import io.findify.s3mock.provider.{FileProvider, InMemoryProvider}
 
 import scala.collection.JavaConverters._
-import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -23,7 +25,7 @@ import scala.io.Source
 /**
   * Created by shutty on 8/9/16.
   */
-trait S3MockTest extends FlatSpec with Matchers with BeforeAndAfterAll {
+trait S3MockTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll {
   private val workDir = File.newTemporaryDirectory().pathAsString
   private val fileBasedPort = 8001
   private val fileSystemConfig = configFor("localhost", fileBasedPort)
@@ -55,13 +57,13 @@ trait S3MockTest extends FlatSpec with Matchers with BeforeAndAfterAll {
     fixture.name should behave like behaviour(fixture)
   }
 
-  override def beforeAll = {
+  override def beforeAll() = {
     if (!File(workDir).exists) File(workDir).createDirectory()
     fileBasedServer.start
     inMemoryServer.start
     super.beforeAll
   }
-  override def afterAll = {
+  override def afterAll() = {
     super.afterAll
     inMemoryServer.stop
     fileBasedServer.stop
@@ -83,17 +85,17 @@ trait S3MockTest extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   def configFor(host: String, port: Int): Config = {
     ConfigFactory.parseMap(Map(
-      "alpakka.s3.proxy.host" -> host,
-      "alpakka.s3.proxy.port" -> port,
-      "alpakka.s3.proxy.secure" -> false,
-      "alpakka.s3.path-style-access" -> true,
-      "alpakka.s3.aws.credentials.provider" -> "static",
-      "alpakka.s3.aws.credentials.access-key-id" -> "foo",
-      "alpakka.s3.aws.credentials.secret-access-key" -> "bar",
-      "alpakka.s3.aws.region.provider" -> "static",
-      "alpakka.s3.aws.region.default-region" -> "us-east-1",
-      "alpakka.s3.buffer" -> "memory",
-      "alpakka.s3.disk-buffer-path" -> ""
+      "pekko.connectors.s3.proxy.host" -> host,
+      "pekko.connectors.s3.proxy.port" -> port,
+      "pekko.connectors.s3.proxy.secure" -> false,
+      "pekko.connectors.s3.path-style-access" -> true,
+      "pekko.connectors.s3.aws.credentials.provider" -> "static",
+      "pekko.connectors.s3.aws.credentials.access-key-id" -> "foo",
+      "pekko.connectors.s3.aws.credentials.secret-access-key" -> "bar",
+      "pekko.connectors.s3.aws.region.provider" -> "static",
+      "pekko.connectors.s3.aws.region.default-region" -> "us-east-1",
+      "pekko.connectors.s3.buffer" -> "memory",
+      "pekko.connectors.s3.disk-buffer-path" -> ""
     ).asJava)
 
   }

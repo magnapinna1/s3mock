@@ -1,10 +1,14 @@
 package io.findify.s3mock.route
 
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
-import akka.http.scaladsl.server.Directives._
-import akka.stream.Materializer
-import akka.stream.scaladsl.Sink
-import akka.util.ByteString
+import org.apache.pekko.http.scaladsl.model.{
+  HttpRequest,
+  HttpResponse,
+  StatusCodes
+}
+import org.apache.pekko.http.scaladsl.server.Directives._
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.scaladsl.Sink
+import org.apache.pekko.util.ByteString
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.S3ChunkedProtocolStage
@@ -14,11 +18,9 @@ import org.apache.commons.codec.digest.DigestUtils
 
 import scala.util.{Failure, Success, Try}
 
-/**
-  * Created by shutty on 8/20/16.
-  */
-case class PutObject()(implicit provider:Provider, mat:Materializer) extends LazyLogging {
-  def route(bucket:String, path:String) = put {
+case class PutObject()(implicit provider: Provider, mat: Materializer)
+    extends LazyLogging {
+  def route(bucket: String, path: String) = put {
     extractRequest { request =>
       headerValueByName("x-amz-decoded-content-length") { _ =>
         completeSigned(bucket, path)
@@ -28,10 +30,8 @@ case class PutObject()(implicit provider:Provider, mat:Materializer) extends Laz
     completePlain(bucket, path)
   }
 
-
-  def completeSigned(bucket:String, path:String) = extractRequest { request =>
+  def completeSigned(bucket: String, path: String) = extractRequest { request =>
     complete {
-
 
       logger.info(s"put object $bucket/$path (signed)")
       val result = request.entity.dataBytes
@@ -53,12 +53,13 @@ case class PutObject()(implicit provider:Provider, mat:Materializer) extends Laz
                 entity = InternalErrorException(t).toXML.toString()
               )
           }
-        }).runWith(Sink.head[HttpResponse])
+        })
+        .runWith(Sink.head[HttpResponse])
       result
     }
   }
 
-  def completePlain(bucket:String, path:String) = extractRequest { request =>
+  def completePlain(bucket: String, path: String) = extractRequest { request =>
     complete {
 
       logger.info(s"put object $bucket/$path (unsigned)")
@@ -80,12 +81,16 @@ case class PutObject()(implicit provider:Provider, mat:Materializer) extends Laz
                 entity = InternalErrorException(t).toXML.toString()
               )
           }
-        }).runWith(Sink.head[HttpResponse])
+        })
+        .runWith(Sink.head[HttpResponse])
       result
     }
   }
 
-  private def populateObjectMetadata(request: HttpRequest, bytes: Array[Byte]): ObjectMetadata = {
+  private def populateObjectMetadata(
+      request: HttpRequest,
+      bytes: Array[Byte]
+  ): ObjectMetadata = {
     val metadata = MetadataUtil.populateObjectMetadata(request)
     metadata.setContentMD5(DigestUtils.md5Hex(bytes))
     metadata

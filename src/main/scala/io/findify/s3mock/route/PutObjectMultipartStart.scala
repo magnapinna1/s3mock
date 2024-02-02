@@ -2,19 +2,19 @@ package io.findify.s3mock.route
 
 import java.nio.charset.StandardCharsets
 
-import akka.http.scaladsl.model._
-import akka.http.scaladsl.server.Directives._
+import org.apache.pekko.http.scaladsl.model._
+import org.apache.pekko.http.scaladsl.server.Directives._
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.error.{InternalErrorException, NoSuchBucketException}
 import io.findify.s3mock.provider.Provider
 
 import scala.util.{Failure, Success, Try}
 
-/**
-  * Created by shutty on 8/20/16.
+/** Created by shutty on 8/20/16.
   */
-case class PutObjectMultipartStart()(implicit provider:Provider) extends LazyLogging {
-  def route(bucket:String, path:String) = post {
+case class PutObjectMultipartStart()(implicit provider: Provider)
+    extends LazyLogging {
+  def route(bucket: String, path: String) = post {
     extractRequest { request =>
       parameter('uploads) { mp =>
         complete {
@@ -25,7 +25,8 @@ case class PutObjectMultipartStart()(implicit provider:Provider) extends LazyLog
               HttpResponse(
                 StatusCodes.OK,
                 entity = HttpEntity(
-                  ContentTypes.`application/octet-stream`, result.toXML.toString().getBytes(StandardCharsets.UTF_8)
+                  ContentTypes.`application/octet-stream`,
+                  result.toXML.toString().getBytes(StandardCharsets.UTF_8)
                 )
               )
             case Failure(e: NoSuchBucketException) =>

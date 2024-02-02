@@ -1,18 +1,15 @@
 package io.findify.s3mock.route
 
-import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
-import akka.http.scaladsl.server.Directives._
+import org.apache.pekko.http.scaladsl.model.{HttpResponse, StatusCodes}
+import org.apache.pekko.http.scaladsl.server.Directives._
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.error.{InternalErrorException, NoSuchBucketException}
 import io.findify.s3mock.provider.Provider
 
 import scala.util.{Failure, Success, Try}
 
-/**
-  * Created by shutty on 8/19/16.
-  */
-case class DeleteBucket()(implicit provider:Provider) extends LazyLogging {
-  def route(bucket:String) = delete {
+case class DeleteBucket()(implicit provider: Provider) extends LazyLogging {
+  def route(bucket: String) = delete {
     complete {
       Try(provider.deleteBucket(bucket)) match {
         case Success(_) =>

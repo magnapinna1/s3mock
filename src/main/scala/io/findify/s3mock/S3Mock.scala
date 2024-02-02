@@ -1,10 +1,10 @@
 package io.findify.s3mock
 
-import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
-import akka.http.scaladsl.server.Directives._
-import akka.stream.ActorMaterializer
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.http.scaladsl.Http
+import org.apache.pekko.http.scaladsl.model.{HttpResponse, StatusCodes}
+import org.apache.pekko.http.scaladsl.server.Directives._
+import org.apache.pekko.stream.ActorMaterializer
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.provider.{FileProvider, InMemoryProvider, Provider}
 import io.findify.s3mock.route._
@@ -12,15 +12,20 @@ import io.findify.s3mock.route._
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
 
-/**
-  * Create s3mock instance, the hard mode.
-  * @param port port to bind to
-  * @param provider backend to use. There are currently two of them implemented, FileProvider and InMemoryProvider
-  * @param system actor system to use. By default, create an own one.
+/** Create s3mock instance, the hard mode.
+  * @param port
+  *   port to bind to
+  * @param provider
+  *   backend to use. There are currently two of them implemented, FileProvider
+  *   and InMemoryProvider
+  * @param system
+  *   actor system to use. By default, create an own one.
   */
-class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSystem.create("s3mock")) extends LazyLogging {
-  implicit val p = provider
-  private var bind:Http.ServerBinding = _
+class S3Mock(port: Int, provider: Provider)(implicit
+    system: ActorSystem = ActorSystem.create("s3mock")
+) extends LazyLogging {
+  implicit val p: io.findify.s3mock.provider.Provider = provider
+  private var bind: Http.ServerBinding = _
 
   def start = {
     implicit val mat = ActorMaterializer()
@@ -57,23 +62,26 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
         }
       } ~ ListBuckets().route() ~ extractRequest { request =>
         complete {
-          logger.error(s"method not implemented: ${request.method.value} ${request.uri.toString}")
+          logger.error(
+            s"method not implemented: ${request.method.value} ${request.uri.toString}"
+          )
           HttpResponse(status = StatusCodes.NotImplemented)
         }
       }
 
-    bind = Await.result(http.bindAndHandle(route, "0.0.0.0", port), Duration.Inf)
+    bind =
+      Await.result(http.bindAndHandle(route, "0.0.0.0", port), Duration.Inf)
     logger.info(s"bound to 0.0.0.0:$port")
     bind
   }
 
-  /**
-    * Stop s3mock instance. For file-based working mode, it will not clean the mounted folder.
-    * This one is also not shutting down the underlying ActorSystem
+  /** Stop s3mock instance. For file-based working mode, it will not clean the
+    * mounted folder. This one is also not shutting down the underlying
+    * ActorSystem
     */
   def stop: Unit = Await.result(bind.unbind(), Duration.Inf)
-  /**
-    * Stop s3mock instance and shutdown the underlying ActorSystem.
+
+  /** Stop s3mock instance and shutdown the underlying ActorSystem.
     */
   def shutdown: Unit = {
     import system.dispatcher
@@ -90,31 +98,33 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
 
 object S3Mock {
   def apply(port: Int): S3Mock = new S3Mock(port, new InMemoryProvider)
-  def apply(port:Int, dir:String) = new S3Mock(port, new FileProvider(dir))
+  def apply(port: Int, dir: String) = new S3Mock(port, new FileProvider(dir))
 
-  /**
-    * Create an in-memory s3mock instance
-    * @param port a port to bind to.
-    * @return s3mock instance
+  /** Create an in-memory s3mock instance
+    * @param port
+    *   a port to bind to.
+    * @return
+    *   s3mock instance
     */
-  def create(port:Int) = apply(port) // Java API
-  /**
-    * Create a file-based s3mock instance
-    * @param port port to bind to
-    * @param dir directory to mount as a collection of buckets. First-level directories will be treated as buckets, their contents - as keys.
+  def create(port: Int) = apply(port) // Java API
+  /** Create a file-based s3mock instance
+    * @param port
+    *   port to bind to
+    * @param dir
+    *   directory to mount as a collection of buckets. First-level directories
+    *   will be treated as buckets, their contents - as keys.
     * @return
     */
-  def create(port:Int, dir:String) = apply(port, dir) // Java API
-  /**
-    * Builder class for java api.
+  def create(port: Int, dir: String) = apply(port, dir) // Java API
+  /** Builder class for java api.
     */
   class Builder {
     private var defaultPort: Int = 8001
     private var defaultProvider: Provider = new InMemoryProvider()
 
-    /**
-      * Set port to bind to
-      * @param port port number
+    /** Set port to bind to
+      * @param port
+      *   port number
       * @return
       */
     def withPort(port: Int): Builder = {
@@ -122,8 +132,7 @@ object S3Mock {
       this
     }
 
-    /**
-      * Use in-memory backend.
+    /** Use in-memory backend.
       * @return
       */
     def withInMemoryBackend(): Builder = {
@@ -131,9 +140,9 @@ object S3Mock {
       this
     }
 
-    /**
-      * Use file-based backend
-      * @param path Directory to mount
+    /** Use file-based backend
+      * @param path
+      *   Directory to mount
       * @return
       */
     def withFileBackend(path: String): Builder = {
@@ -141,8 +150,7 @@ object S3Mock {
       this
     }
 
-    /**
-      * Build s3mock instance
+    /** Build s3mock instance
       * @return
       */
     def build(): S3Mock = {
@@ -150,4 +158,3 @@ object S3Mock {
     }
   }
 }
-
