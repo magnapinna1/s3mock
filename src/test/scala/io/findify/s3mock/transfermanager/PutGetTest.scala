@@ -7,8 +7,7 @@ import io.findify.s3mock.S3MockTest
 
 import scala.io.Source
 
-/**
-  * Created by shutty on 11/23/16.
+/** Created by shutty on 11/23/16.
   */
 class PutGetTest extends S3MockTest {
   override def behaviour(fixture: => Fixture) = {
@@ -17,7 +16,12 @@ class PutGetTest extends S3MockTest {
 
     it should "put files with TransferManager" in {
       s3.createBucket("tm1")
-      val upload = tm.upload("tm1", "hello1", new ByteArrayInputStream("hello".getBytes), new ObjectMetadata())
+      val upload = tm.upload(
+        "tm1",
+        "hello1",
+        new ByteArrayInputStream("hello".getBytes),
+        new ObjectMetadata()
+      )
       val result = upload.waitForUploadResult()
       result.getKey shouldBe "hello1"
     }
@@ -26,7 +30,8 @@ class PutGetTest extends S3MockTest {
       val file = File.createTempFile("hello1", ".s3mock")
       val download = tm.download("tm1", "hello1", file)
       download.waitForCompletion()
-      val result = Source.fromInputStream(new FileInputStream(file), "UTF-8").mkString
+      val result =
+        Source.fromInputStream(new FileInputStream(file), "UTF-8").mkString
       result shouldBe "hello"
     }
 

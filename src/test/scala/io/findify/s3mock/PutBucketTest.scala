@@ -1,7 +1,7 @@
 package io.findify.s3mock
 import scala.jdk.CollectionConverters._
-/**
-  * Created by shutty on 8/10/16.
+
+/** Created by shutty on 8/10/16.
   */
 class PutBucketTest extends S3MockTest {
   override def behaviour(fixture: => Fixture) = {

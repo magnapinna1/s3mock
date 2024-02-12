@@ -7,10 +7,14 @@ import scala.collection.mutable
 
 class InMemoryMetadataStore extends MetadataStore {
 
-  private val bucketMetadata = new TrieMap[String, mutable.Map[String, ObjectMetadata]]
+  private val bucketMetadata =
+    new TrieMap[String, mutable.Map[String, ObjectMetadata]]
 
   override def put(bucket: String, key: String, meta: ObjectMetadata): Unit = {
-    val currentBucketMetadata = bucketMetadata.getOrElseUpdate(bucket, new TrieMap[String, ObjectMetadata]())
+    val currentBucketMetadata = bucketMetadata.getOrElseUpdate(
+      bucket,
+      new TrieMap[String, ObjectMetadata]()
+    )
     currentBucketMetadata.put(key, meta)
   }
 

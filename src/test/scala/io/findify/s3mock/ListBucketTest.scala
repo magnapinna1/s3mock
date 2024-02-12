@@ -3,13 +3,17 @@ package io.findify.s3mock
 import java.util
 
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
-import com.amazonaws.services.s3.model.{AmazonS3Exception, ListObjectsRequest, ListObjectsV2Request, S3ObjectSummary}
+import com.amazonaws.services.s3.model.{
+  AmazonS3Exception,
+  ListObjectsRequest,
+  ListObjectsV2Request,
+  S3ObjectSummary
+}
 import org.joda.time.DateTime
 
 import scala.jdk.CollectionConverters._
 
-/**
-  * Created by shutty on 8/9/16.
+/** Created by shutty on 8/9/16.
   */
 class ListBucketTest extends S3MockTest {
   override def behaviour(fixture: => Fixture) = {
@@ -33,7 +37,8 @@ class ListBucketTest extends S3MockTest {
       s3.putObject("list2", "one/foo2/3", "xxx")
       s3.putObject("list2", "one/foo2/4", "xxx")
       s3.putObject("list2", "one/xfoo3", "xxx")
-      val ol = s3.listObjects("list2", "one/f").getObjectSummaries.asScala.toList
+      val ol =
+        s3.listObjects("list2", "one/f").getObjectSummaries.asScala.toList
       ol.size shouldBe 4
       ol.map(_.getKey).forall(_.startsWith("one/foo")) shouldBe true
     }
@@ -42,13 +47,17 @@ class ListBucketTest extends S3MockTest {
       s3.putObject("list3", "one/foo1", "xxx")
       s3.putObject("list3", "one/foo2", "xxx")
       s3.putObject("list3", "one/xfoo3", "xxx")
-      s3.listObjects("list3", "qaz/qax").getObjectSummaries.asScala.isEmpty shouldBe true
+      s3.listObjects("list3", "qaz/qax")
+        .getObjectSummaries
+        .asScala
+        .isEmpty shouldBe true
 
     }
     it should "return keys with valid keys (when no prefix given)" in {
       s3.createBucket("list4")
       s3.putObject("list4", "one", "xxx")
-      val summaries: util.List[S3ObjectSummary] = s3.listObjects("list4").getObjectSummaries
+      val summaries: util.List[S3ObjectSummary] =
+        s3.listObjects("list4").getObjectSummaries
       summaries.size() shouldBe 1
       val summary = summaries.get(0)
       summary.getBucketName shouldBe "list4"
@@ -96,7 +105,10 @@ class ListBucketTest extends S3MockTest {
       req2.setPrefix("photos/2006/")
       val list2 = s3.listObjects(req2)
       val summaries2 = list2.getObjectSummaries.asScala.map(_.getKey).toList
-      list2.getCommonPrefixes.asScala.toList shouldBe List("photos/2006/February/", "photos/2006/January/")
+      list2.getCommonPrefixes.asScala.toList shouldBe List(
+        "photos/2006/February/",
+        "photos/2006/January/"
+      )
       summaries2 shouldBe Nil
     }
 
@@ -117,7 +129,6 @@ class ListBucketTest extends S3MockTest {
       list2.getCommonPrefixes.asScala.toList shouldBe List("photos/2006/")
       summaries2 shouldBe Nil
     }
-
 
     it should "obey delimiters && prefixes v3" in {
       s3.createBucket("list5")
@@ -140,7 +151,11 @@ class ListBucketTest extends S3MockTest {
       s3.putObject("list6", "a", "xx")
       s3.putObject("list6", "0", "xx")
       val list = s3.listObjects("list6")
-      list.getObjectSummaries.asScala.map(_.getKey).toList shouldBe List("0", "a", "b")
+      list.getObjectSummaries.asScala.map(_.getKey).toList shouldBe List(
+        "0",
+        "a",
+        "b"
+      )
     }
 
     it should "getCommonPrefixes should return return objects sorted lexicographically" in {
@@ -161,7 +176,13 @@ class ListBucketTest extends S3MockTest {
       req2.setPrefix("dev/")
       val list2 = s3.listObjects(req2)
       val summaries2 = list2.getObjectSummaries.asScala.map(_.getKey).toList
-      list2.getCommonPrefixes.asScala.toList shouldBe List("dev/10/", "dev/20/", "dev/30/", "dev/40/", "dev/50/")
+      list2.getCommonPrefixes.asScala.toList shouldBe List(
+        "dev/10/",
+        "dev/20/",
+        "dev/30/",
+        "dev/40/",
+        "dev/50/"
+      )
       summaries2 shouldBe Nil
     }
 
@@ -172,7 +193,7 @@ class ListBucketTest extends S3MockTest {
       req2.setBucketName("list8")
       req2.setDelimiter("/")
       req2.setPrefix("dev/someEvent/2017/03/13/00/_SUCCESS")
-      val list2  = s3.listObjects(req2)
+      val list2 = s3.listObjects(req2)
       list2.getObjectSummaries.size shouldEqual 1
       list2.getObjectSummaries.asScala.head.getKey shouldEqual "dev/someEvent/2017/03/13/00/_SUCCESS"
     }
@@ -182,9 +203,13 @@ class ListBucketTest extends S3MockTest {
       s3.putObject("list7k", "b", "xx")
       s3.putObject("list7k", "a", "xx")
       s3.putObject("list7k", "c", "xx")
-      val request = new ListObjectsV2Request().withBucketName("list7k").withMaxKeys(2)
+      val request =
+        new ListObjectsV2Request().withBucketName("list7k").withMaxKeys(2)
       val list = s3.listObjectsV2(request)
-      list.getObjectSummaries.asScala.map(_.getKey).toList shouldBe List("a", "b")
+      list.getObjectSummaries.asScala.map(_.getKey).toList shouldBe List(
+        "a",
+        "b"
+      )
       list.isTruncated shouldBe true
     }
 
@@ -192,15 +217,22 @@ class ListBucketTest extends S3MockTest {
       s3.createBucket("list9")
       s3.putObject("list9", "foo1", "xxx")
       s3.putObject("list9", "foo2", "yyy")
-      val list = s3.listObjects("list9", "foo").getObjectSummaries.asScala.toList
-      list.find(_.getKey == "foo1").map(_.getETag) shouldBe Some("f561aaf6ef0bf14d4208bb46a4ccb3ad")
+      val list =
+        s3.listObjects("list9", "foo").getObjectSummaries.asScala.toList
+      list.find(_.getKey == "foo1").map(_.getETag) shouldBe Some(
+        "f561aaf6ef0bf14d4208bb46a4ccb3ad"
+      )
     }
 
     it should "set correct last-modified header" in {
       s3.createBucket("list10")
       s3.putObject("list10", "foo", "xxx")
       val list = s3.listObjects("list10").getObjectSummaries.asScala.toList
-      list.find(_.getKey == "foo").map(_.getLastModified.after(DateTime.now().minusMinutes(1).toDate)) shouldBe Some(true)
+      list
+        .find(_.getKey == "foo")
+        .map(
+          _.getLastModified.after(DateTime.now().minusMinutes(1).toDate)
+        ) shouldBe Some(true)
     }
 
     it should "work with empty string delimiters as if no delimiter was provided" in {
@@ -213,7 +245,9 @@ class ListBucketTest extends S3MockTest {
       req.setDelimiter("")
       req.setPrefix("")
       val list = s3.listObjects(req)
-      list.getObjectSummaries.asScala.map(_.getKey).toList should contain only ("sample.jpg", "photos/2006/January/sample.jpg")
+      list.getObjectSummaries.asScala
+        .map(_.getKey)
+        .toList should contain only ("sample.jpg", "photos/2006/January/sample.jpg")
     }
   }
 }

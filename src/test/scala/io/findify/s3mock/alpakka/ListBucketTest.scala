@@ -12,13 +12,15 @@ class ListBucketTest extends S3MockTest {
     implicit val sys = fixture.system
     implicit val mat = fixture.mat
 
-
     it should "list objects via alpakka" in {
       s3.createBucket("alpakkalist")
       s3.putObject("alpakkalist", "test1", "foobar")
       s3.putObject("alpakkalist", "test2", "foobar")
       s3.putObject("alpakkalist", "test3", "foobar")
-      val result = Await.result(fixture.alpakka.listBucket("alpakkalist", None).runWith(Sink.seq), 5.second)
+      val result = Await.result(
+        fixture.alpakka.listBucket("alpakkalist", None).runWith(Sink.seq),
+        5.second
+      )
       result.size shouldBe 3
       result.map(_.key) shouldBe Seq("test1", "test2", "test3")
     }
@@ -28,7 +30,12 @@ class ListBucketTest extends S3MockTest {
       s3.putObject("alpakkalist2", "test1", "foobar")
       s3.putObject("alpakkalist2", "test2", "foobar")
       s3.putObject("alpakkalist2", "xtest3", "foobar")
-      val result = Await.result(fixture.alpakka.listBucket("alpakkalist2", Some("test")).runWith(Sink.seq), 5.second)
+      val result = Await.result(
+        fixture.alpakka
+          .listBucket("alpakkalist2", Some("test"))
+          .runWith(Sink.seq),
+        5.second
+      )
       result.size shouldBe 2
       result.map(_.key) shouldBe Seq("test1", "test2")
     }

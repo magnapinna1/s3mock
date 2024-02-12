@@ -16,8 +16,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.util.{Random, Try}
 
-/**
-  * Created by shutty on 8/10/16.
+/** Created by shutty on 8/10/16.
   */
 
 class GetPutObjectTest extends S3MockTest {
@@ -35,8 +34,18 @@ class GetPutObjectTest extends S3MockTest {
       implicit val system = ActorSystem.create("test")
       implicit val mat = ActorMaterializer()
       val http = Http(system)
-      if (!s3.listBuckets().asScala.exists(_.getName == "getput")) s3.createBucket("getput")
-      val response = Await.result(http.singleRequest(HttpRequest(method = HttpMethods.POST, uri = s"http://127.0.0.1:$port/getput/foo2", entity = "bar")), 10.seconds)
+      if (!s3.listBuckets().asScala.exists(_.getName == "getput"))
+        s3.createBucket("getput")
+      val response = Await.result(
+        http.singleRequest(
+          HttpRequest(
+            method = HttpMethods.POST,
+            uri = s"http://127.0.0.1:$port/getput/foo2",
+            entity = "bar"
+          )
+        ),
+        10.seconds
+      )
       getContent(s3.getObject("getput", "foo2")) shouldBe "bar"
     }
     it should "put objects in subdirs" in {
@@ -51,18 +60,39 @@ class GetPutObjectTest extends S3MockTest {
     }
     it should "put & get large binary blobs" in {
       val blob = Random.nextString(1024000).getBytes("UTF-8")
-      s3.putObject("getput", "foolarge", new ByteArrayInputStream(blob), new ObjectMetadata())
-      val result = getContent(s3.getObject("getput", "foolarge")).getBytes("UTF-8")
+      s3.putObject(
+        "getput",
+        "foolarge",
+        new ByteArrayInputStream(blob),
+        new ObjectMetadata()
+      )
+      val result =
+        getContent(s3.getObject("getput", "foolarge")).getBytes("UTF-8")
       result shouldBe blob
     }
 
     it should "store tags and spit them back on get tagging requests" in {
       s3.createBucket("tbucket")
       s3.putObject(
-        new PutObjectRequest("tbucket", "taggedobj", new ByteArrayInputStream("content".getBytes("UTF-8")), new ObjectMetadata)
-          .withTagging(new ObjectTagging(List(new Tag("key1", "val1"), new Tag("key=&interesting", "value=something&stragne")).asJava))
+        new PutObjectRequest(
+          "tbucket",
+          "taggedobj",
+          new ByteArrayInputStream("content".getBytes("UTF-8")),
+          new ObjectMetadata
+        )
+          .withTagging(
+            new ObjectTagging(
+              List(
+                new Tag("key1", "val1"),
+                new Tag("key=&interesting", "value=something&stragne")
+              ).asJava
+            )
+          )
       )
-      var tagging = s3.getObjectTagging(new GetObjectTaggingRequest("tbucket", "taggedobj")).getTagSet.asScala
+      var tagging = s3
+        .getObjectTagging(new GetObjectTaggingRequest("tbucket", "taggedobj"))
+        .getTagSet
+        .asScala
       var tagMap = new util.HashMap[String, String]()
       for (tag <- tagging) {
         tagMap.put(tag.getKey, tag.getValue)
@@ -73,7 +103,9 @@ class GetPutObjectTest extends S3MockTest {
     }
     it should "be OK with retrieving tags for un-tagged objects" in {
       s3.putObject("tbucket", "taggedobj", "some-content")
-      var tagging = s3.getObjectTagging(new GetObjectTaggingRequest("tbucket", "taggedobj")).getTagSet
+      var tagging = s3
+        .getObjectTagging(new GetObjectTaggingRequest("tbucket", "taggedobj"))
+        .getTagSet
       tagging.size() shouldBe 0
     }
 
@@ -105,7 +137,8 @@ class GetPutObjectTest extends S3MockTest {
       s3.listBuckets().asScala.exists(_.getName == "dot") shouldBe true
       s3.putObject("dot", "foo", "bar")
       s3.putObject("dot", ".foo", "bar")
-      val result = s3.listObjects("dot").getObjectSummaries.asScala.toList.map(_.getKey)
+      val result =
+        s3.listObjects("dot").getObjectSummaries.asScala.toList.map(_.getKey)
       result shouldBe List(".foo", "foo")
     }
 
@@ -114,10 +147,15 @@ class GetPutObjectTest extends S3MockTest {
       s3.listBuckets().asScala.exists(_.getName == "urlencoded") shouldBe true
       s3.putObject("urlencoded", "path/with=123/foo", "bar=")
       s3.putObject("urlencoded", "path/withoutequals/foo", "bar")
-      val result = s3.listObjects("urlencoded").getObjectSummaries.asScala.map(_.getKey)
+      val result =
+        s3.listObjects("urlencoded").getObjectSummaries.asScala.map(_.getKey)
       result shouldBe List("path/with=123/foo", "path/withoutequals/foo")
-      getContent(s3.getObject("urlencoded", "path/with=123/foo")) shouldBe "bar="
-      getContent(s3.getObject("urlencoded", "path/withoutequals/foo")) shouldBe "bar"
+      getContent(
+        s3.getObject("urlencoded", "path/with=123/foo")
+      ) shouldBe "bar="
+      getContent(
+        s3.getObject("urlencoded", "path/withoutequals/foo")
+      ) shouldBe "bar"
     }
 
     it should "support ranged get requests" in {
@@ -129,14 +167,20 @@ class GetPutObjectTest extends S3MockTest {
       val key = "data"
 
       s3.createBucket(bucket)
-      s3.putObject(bucket, key, new ByteArrayInputStream(data), new ObjectMetadata())
+      s3.putObject(
+        bucket,
+        key,
+        new ByteArrayInputStream(data),
+        new ObjectMetadata()
+      )
 
       val (startByte, endByte) = (5L, 55L)
       val getObjectRequest = new GetObjectRequest(bucket, key)
       getObjectRequest.setRange(startByte, endByte)
 
       val sliceOfData = data.slice(startByte.toInt, endByte.toInt + 1)
-      val retrievedData = IOUtils.toByteArray(s3.getObject(getObjectRequest).getObjectContent)
+      val retrievedData =
+        IOUtils.toByteArray(s3.getObject(getObjectRequest).getObjectContent)
 
       retrievedData shouldEqual sliceOfData
     }
@@ -145,9 +189,13 @@ class GetPutObjectTest extends S3MockTest {
       s3.createBucket("subpath")
       s3.putObject("subpath", "some/path/example", "bar")
       val noSlash = Try(s3.getObject("subpath", "some/path"))
-      noSlash.failed.get.asInstanceOf[AmazonS3Exception].getStatusCode shouldBe 404
+      noSlash.failed.get
+        .asInstanceOf[AmazonS3Exception]
+        .getStatusCode shouldBe 404
       val withSlash = Try(s3.getObject("subpath", "some/path/"))
-      withSlash.failed.get.asInstanceOf[AmazonS3Exception].getStatusCode shouldBe 404
+      withSlash.failed.get
+        .asInstanceOf[AmazonS3Exception]
+        .getStatusCode shouldBe 404
     }
 
     // this trick is not possible on POSIX-compliant file systems:
@@ -158,7 +206,7 @@ class GetPutObjectTest extends S3MockTest {
       s3.putObject("prefix", "some", "bar")
       val noSlash = Try(s3.getObject("prefix", "some/path"))
       val withSlash = Try(s3.getObject("prefix", "some"))
-      val br=1
+      val br = 1
     }
 
     it should "have etag in metadata" ignore {
@@ -171,10 +219,15 @@ class GetPutObjectTest extends S3MockTest {
     it should "not fail concurrent requests" in {
       s3.createBucket("concurrent")
       s3.putObject("concurrent", "file/name", "contents")
-      val results = Range(1, 100).par.map(_ => IOUtils.toString(s3.getObject("concurrent", "file/name").getObjectContent)).toList
+      val results = Range(1, 100).par
+        .map(_ =>
+          IOUtils.toString(
+            s3.getObject("concurrent", "file/name").getObjectContent
+          )
+        )
+        .toList
       results.forall(_ == "contents") shouldBe true
     }
   }
 
 }
-

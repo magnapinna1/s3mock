@@ -17,7 +17,15 @@ class GetObjectTest extends AWSCliTest {
     it should "receive LastModified header with AWS CLI" in {
       s3.createBucket("awscli-lm")
       s3.putObject("awscli-lm", "foo", "bar")
-      val response = Await.result(http.singleRequest(HttpRequest(method = HttpMethods.GET, uri = s"http://127.0.0.1:$port/awscli-lm/foo")), 10.seconds)
+      val response = Await.result(
+        http.singleRequest(
+          HttpRequest(
+            method = HttpMethods.GET,
+            uri = s"http://127.0.0.1:$port/awscli-lm/foo"
+          )
+        ),
+        10.seconds
+      )
       val last_modified = response.headers
         .find(_.is("last-modified"))
         .map(h => DateTimeFormatter.RFC_1123_DATE_TIME.parse(h.value()))
@@ -30,7 +38,15 @@ class GetObjectTest extends AWSCliTest {
     it should "deal with HEAD requests with AWS CLI" ignore {
       s3.createBucket("awscli-head")
       s3.putObject("awscli-head", "foo2", "bar")
-      val response = Await.result(http.singleRequest(HttpRequest(method = HttpMethods.HEAD, uri = s"http://127.0.0.1:$port/awscli-head/foo2")), 10.seconds)
+      val response = Await.result(
+        http.singleRequest(
+          HttpRequest(
+            method = HttpMethods.HEAD,
+            uri = s"http://127.0.0.1:$port/awscli-head/foo2"
+          )
+        ),
+        10.seconds
+      )
       val last_modified = response.headers
         .find(_.is("last-modified"))
         .map(h => DateTimeFormatter.RFC_1123_DATE_TIME.parse(h.value()))
@@ -39,7 +55,14 @@ class GetObjectTest extends AWSCliTest {
       // Timestamp changes everytime we run the test. We can not check the value
       last_modified shouldBe a[TemporalAccessor]
       response.entity.contentLengthOption shouldBe Some(3)
-      Await.result(response.entity.dataBytes.fold(ByteString(""))(_ ++ _).runWith(Sink.head), 10.seconds).utf8String shouldBe ""
+      Await
+        .result(
+          response.entity.dataBytes
+            .fold(ByteString(""))(_ ++ _)
+            .runWith(Sink.head),
+          10.seconds
+        )
+        .utf8String shouldBe ""
     }
     it should "deal with metadata requests with AWS CLI" ignore {
       s3.createBucket("awscli-head2")
