@@ -7,10 +7,7 @@ import org.apache.pekko.http.scaladsl.model.DateTime
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.typesafe.scalalogging.LazyLogging
 import io.kipp.s3mock.error.{NoSuchBucketException, NoSuchKeyException}
-import io.kipp.s3mock.provider.metadata.{
-  InMemoryMetadataStore,
-  MetadataStore
-}
+import io.kipp.s3mock.provider.metadata.{InMemoryMetadataStore, MetadataStore}
 import io.kipp.s3mock.request.{
   CompleteMultipartUpload,
   CreateBucketConfiguration
