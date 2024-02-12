@@ -3,8 +3,19 @@ ThisBuild / version := "0.2.7-SNAPSHOT"
 ThisBuild / organization := "io.chris-kipp"
 ThisBuild / scalaVersion := "2.13.12"
 ThisBuild / licenses := Seq("MIT" -> url("https://opensource.org/licenses/MIT"))
+ThisBuild / homepage := Some(url("https://github.com/ckipp01/s3mock"))
+ThisBuild / developers := List(
+  Developer(
+    "ckipp01",
+    "Chris Kipp",
+    "open-source@chris-kipp.io",
+    url("https://chris-kipp.io")
+  )
+)
+ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
+ThisBuild / sonatypeRepository := "https://s01.oss.sonatype.org/service/local"
 
-val pekkoVersion = "1.0.2"
+lazy val pekkoVersion = "1.0.2"
 
 ThisBuild / libraryDependencies ++= Seq(
   "org.apache.pekko" %% "pekko-stream" % pekkoVersion,
