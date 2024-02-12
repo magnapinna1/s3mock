@@ -1,20 +1,12 @@
-name := "s3mock"
-
-version := "0.2.7-SNAPSHOT"
-
-organization := "io.findify"
-
-scalaVersion in ThisBuild := "2.13.12"
-
-crossScalaVersions in ThisBuild := Seq("2.13.12")
+ThisBuild / name := "s3mock"
+ThisBuild / version := "0.2.7-SNAPSHOT"
+ThisBuild / organization := "io.findify"
+ThisBuild / scalaVersion := "2.13.12"
+ThisBuild / licenses := Seq("MIT" -> url("https://opensource.org/licenses/MIT"))
 
 val pekkoVersion = "1.0.2"
 
-licenses := Seq("MIT" -> url("https://opensource.org/licenses/MIT"))
-
-homepage := Some(url("https://github.com/findify/s3mock"))
-
-libraryDependencies ++= Seq(
+ThisBuild / libraryDependencies ++= Seq(
   "org.apache.pekko" %% "pekko-stream" % pekkoVersion,
   "org.apache.pekko" %% "pekko-http" % "1.0.0",
   "org.apache.pekko" %% "pekko-stream-testkit" % pekkoVersion % Test,
@@ -34,9 +26,3 @@ libraryDependencies ++= Seq(
 )
 
 Test / parallelExecution := false
-
-assemblyJarName in assembly := "s3mock.jar"
-mainClass in assembly := Some("io.findify.s3mock.Main")
-test in assembly := {}
-
-publishTo := sonatypePublishToBundle.value
