@@ -1,10 +1,12 @@
 # S3 mock library for Java/Scala
 
-[![Build Status](https://travis-ci.org/findify/s3mock.svg?branch=master)](https://travis-ci.org/findify/s3mock)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.findify/s3mock_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.findify/s3mock_2.12)
-
 s3mock is a web service implementing AWS S3 API, which can be used for local testing of your code using S3
 but without hitting real S3 endpoints.
+
+**NOTE**: This library is a fork of https://github.com/findify/s3mock, updated,
+and migrated from [Akka](https://akka.io/) to
+[Pekko](https://pekko.apache.org/docs/pekko/current/index.html). There will not
+be active development on it... I just needed it for $work.
 
 Implemented API methods:
 * list buckets
@@ -25,30 +27,11 @@ Not supported features (these might be implemented later):
 
 ## Installation
 
-s3mock package is available for Scala 2.11/2.12/2.13 (on Java 8/11). To install using SBT, add these
+s3mock package is available for Scala 2.13 and tested on Java 11/17. To install using sbt, add these
  statements to your `build.sbt`:
 
-    libraryDependencies += "io.findify" %% "s3mock" % "0.2.6" % "test",
-
-On maven, update your `pom.xml` in the following way:
-```xml
-    // add this entry to <dependencies/>
-    <dependency>
-        <groupId>io.findify</groupId>
-        <artifactId>s3mock_2.13</artifactId>
-        <version>0.2.6</version>
-        <scope>test</scope>
-    </dependency>
 ```
-
-S3Mock is also available as a [docker container](https://hub.docker.com/r/findify/s3mock/) for out-of-jvm testing:
-```bash
-docker run -p 8001:8001 findify/s3mock:latest
-```
-
-To mount a directory containing the prepared content, mount the volume and set the `S3MOCK_DATA_DIR` environment variable:
-```bash
-docker run -p 8001:8001 -v /host/path/to/s3mock/:/tmp/s3mock/ -e "S3MOCK_DATA_DIR=/tmp/s3mock" findify/s3mock:latest
+libraryDependencies += "io.chris-kipp" %% "s3mock" % "<version>" % Test
 ```
 
 ## Usage
@@ -69,7 +52,7 @@ Java:
     import com.amazonaws.services.s3.AmazonS3Builder;
     import com.amazonaws.services.s3.AmazonS3Client;
     import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-    import io.findify.s3mock.S3Mock;
+    import io.kipp.s3mock.S3Mock;
     
     /*
      S3Mock.create(8001, "/tmp/s3");
@@ -106,7 +89,7 @@ Scala with AWS S3 SDK:
     import com.amazonaws.services.s3.AmazonS3Builder
     import com.amazonaws.services.s3.AmazonS3Client
     import com.amazonaws.services.s3.AmazonS3ClientBuilder
-    import io.findify.s3mock.S3Mock
+    import io.kipp.s3mock.S3Mock
 
     
     /** Create and start S3 API mock. */
@@ -133,12 +116,12 @@ Scala with AWS S3 SDK:
     api.shutdown() // this one terminates the actor system. Use api.stop() to just unbind the service without messing with the ActorSystem
 ```
 
-Scala with Alpakka 1.0.0:
+Scala with Pekko Connectors Kafka:
 ```scala
-    import akka.actor.ActorSystem
-    import akka.stream.ActorMaterializer
-    import akka.stream.alpakka.s3.scaladsl.S3Client
-    import akka.stream.scaladsl.Sink
+    import org.apache.pekko.ActorSystem
+    import org.apache.pekko.ActorMaterializer
+    import org.apache.pekko.stream.connectors.s3.scaladsl.S3Client
+    import org.apache.pekko.stream.scaladsl.Sink
     import com.typesafe.config.ConfigFactory
     import scala.collection.JavaConverters._
 
@@ -160,15 +143,3 @@ Scala with Alpakka 1.0.0:
     val contents = s3a.download("bucket", "key")._1.runWith(Sink.reduce[ByteString](_ ++ _)).map(_.utf8String)
       
 ```
-    
-## License
-
-The MIT License (MIT)
-
-Copyright (c) 2016 Findify AB
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
