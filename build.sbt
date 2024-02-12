@@ -1,6 +1,6 @@
 ThisBuild / name := "s3mock"
 ThisBuild / version := "0.2.7-SNAPSHOT"
-ThisBuild / organization := "io.findify"
+ThisBuild / organization := "io.chris-kipp"
 ThisBuild / scalaVersion := "2.13.12"
 ThisBuild / licenses := Seq("MIT" -> url("https://opensource.org/licenses/MIT"))
 
