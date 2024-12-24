@@ -3,10 +3,12 @@
 s3mock is a web service implementing AWS S3 API, which can be used for local testing of your code using S3
 but without hitting real S3 endpoints.
 
-**NOTE**: This library is a fork of https://github.com/findify/s3mock, updated,
-and migrated from [Akka](https://akka.io/) to
-[Pekko](https://pekko.apache.org/docs/pekko/current/index.html). There will not
-be active development on it... I just needed it for $work.
+**NOTE**: This library is a fork of https://github.com/ckipp01/s3mock. I just compiled it with Scala 2.12. There will not
+be active development on it... I just needed it for work.
+
+### NOTE
+The old findify version of this repo would automatically handle HEAD requests. It seems this has been disabled by default with the switch from Akka to Pekko.
+To restore the old behavior, add the config option `pekko.http.server.transparent-head-requests = on` to `resources/application.conf`
 
 Implemented API methods:
 * list buckets
@@ -27,11 +29,11 @@ Not supported features (these might be implemented later):
 
 ## Installation
 
-s3mock package is available for Scala 2.13 and tested on Java 11/17. To install using sbt, add these
+s3mock package is available for Scala 2.12 and tested on Java 11/17. To install using sbt, add these
  statements to your `build.sbt`:
 
 ```
-libraryDependencies += "io.chris-kipp" %% "s3mock" % "<version>" % Test
+libraryDependencies += "io.github.magnapinna1" %% "s3mock" % "<version>" % Test
 ```
 
 ## Usage
@@ -52,7 +54,7 @@ Java:
     import com.amazonaws.services.s3.AmazonS3Builder;
     import com.amazonaws.services.s3.AmazonS3Client;
     import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-    import io.kipp.s3mock.S3Mock;
+    import io.magnapinna.s3mock.S3Mock;
     
     /*
      S3Mock.create(8001, "/tmp/s3");
@@ -89,7 +91,7 @@ Scala with AWS S3 SDK:
     import com.amazonaws.services.s3.AmazonS3Builder
     import com.amazonaws.services.s3.AmazonS3Client
     import com.amazonaws.services.s3.AmazonS3ClientBuilder
-    import io.kipp.s3mock.S3Mock
+    import io.magnapinna.s3mock.S3Mock
 
     
     /** Create and start S3 API mock. */
@@ -143,3 +145,23 @@ Scala with Pekko Connectors Kafka:
     val contents = s3a.download("bucket", "key")._1.runWith(Sink.reduce[ByteString](_ ++ _)).map(_.utf8String)
       
 ```
+
+### NOTE
+The old findify version of this repo would automatically handle HEAD requests. It seems this has been disabled by default with the switch from Akka to Pekko.
+To restore the old behavior, add the config option `pekko.http.server.transparent-head-requests = on` to `resources/application.conf`
+
+### To publish
+
+Increment version in build.sbt
+Install GPG and create Key as documented here https://central.sonatype.org/publish/requirements/#sign-files-with-gpgpgp
+Create file `~/.sbt/<version>/sonatype.sbt` with the following contents retrieved from central.sonatype.com
+
+credentials += Credentials("Sonatype Nexus Repository Manager",
+"central.sonatype.com",
+"username",
+"password")
+
+Run `publishSigned`
+Run `sonatypeCentralUpload`
+
+Login to central.sonatype.com and verify the validation status. Click the "publish" button if it succeeded.

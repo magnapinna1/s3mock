@@ -1,20 +1,34 @@
+import sbt.librarymanagement.Developer
+import sbt.librarymanagement.ivy.Credentials
+import xerial.sbt.Sonatype.sonatypeCentralHost
+
 ThisBuild / name := "s3mock"
-ThisBuild / organization := "io.chris-kipp"
-ThisBuild / scalaVersion := "2.13.12"
+ThisBuild / organization := "io.github.magnapinna1"
+ThisBuild / scalaVersion := "2.12.12"
 ThisBuild / licenses := Seq("MIT" -> url("https://opensource.org/licenses/MIT"))
-ThisBuild / homepage := Some(url("https://github.com/ckipp01/s3mock"))
-ThisBuild / developers := List(
-  Developer(
-    "ckipp01",
-    "Chris Kipp",
-    "open-source@chris-kipp.io",
-    url("https://chris-kipp.io")
+ThisBuild / homepage := Some(url("https://github.com/magnapinna1/s3mock"))
+scmInfo := Some(
+  ScmInfo(
+    url("https://github.com/magnapinna1/s3mock"),
+    "scm:git@github.com:magnapinna1/s3mock.git"
   )
 )
-ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
-ThisBuild / sonatypeRepository := "https://s01.oss.sonatype.org/service/local"
+
+ThisBuild / developers := List(
+  Developer(
+    "magnapinna1",
+    "Michael M",
+    "mmoich123@gmail.com",
+    url("https://github.com/magnapinna1")
+  )
+)
 
 lazy val pekkoVersion = "1.0.2"
+
+
+ThisBuild / sonatypeCredentialHost := sonatypeCentralHost
+ThisBuild / publishTo := sonatypePublishToBundle.value
+ThisBuild / version := "1.0.0"
 
 ThisBuild / libraryDependencies ++= Seq(
   "org.apache.pekko" %% "pekko-stream" % pekkoVersion,
@@ -31,8 +45,8 @@ ThisBuild / libraryDependencies ++= Seq(
   "org.apache.pekko" %% "pekko-connectors-s3" % pekkoVersion % Test,
   "javax.xml.bind" % "jaxb-api" % "2.3.1",
   "com.sun.xml.bind" % "jaxb-core" % "3.0.1",
-  "com.sun.xml.bind" % "jaxb-impl" % "3.0.1",
-  "org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0" % Test
+  "com.sun.xml.bind" % "jaxb-impl" % "3.0.1"
 )
 
-Test / parallelExecution := false
+ThisBuild / parallelExecution := false
+Global / concurrentRestrictions += Tags.limit(Tags.Test, 1)
