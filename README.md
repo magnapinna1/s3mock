@@ -148,16 +148,15 @@ Scala with Pekko Connectors Kafka:
 
 ### To publish
 
-Increment version in build.sbt
-Install GPG and create Key as documented here https://central.sonatype.org/publish/requirements/#sign-files-with-gpgpgp
-Create file `~/.sbt/<version>/sonatype.sbt` with the following contents retrieved from central.sonatype.com
+1. Increment version in build.sbt
+2. Install GPG and create Key as documented here https://central.sonatype.org/publish/requirements/#sign-files-with-gpgpgp
+3. Create file `~/.sbt/<version>/sonatype.sbt` with the following contents retrieved from central.sonatype.com
 
-credentials += Credentials("Sonatype Nexus Repository Manager",
+>credentials += Credentials("Sonatype Nexus Repository Manager",
 "central.sonatype.com",
 "username",
 "password")
 
-Run `publishSigned`
-Run `sonatypeCentralUpload`
-
-Login to central.sonatype.com and verify the validation status. Click the "publish" button if it succeeded.
+4. Run `publishSigned`
+5. Run `sonatypeCentralUpload`
+6. Login to central.sonatype.com and verify the validation status. Click the "publish" button if it succeeded.
