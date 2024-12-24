@@ -146,10 +146,6 @@ Scala with Pekko Connectors Kafka:
       
 ```
 
-### NOTE
-The old findify version of this repo would automatically handle HEAD requests. It seems this has been disabled by default with the switch from Akka to Pekko.
-To restore the old behavior, add the config option `pekko.http.server.transparent-head-requests = on` to `resources/application.conf`
-
 ### To publish
 
 Increment version in build.sbt
